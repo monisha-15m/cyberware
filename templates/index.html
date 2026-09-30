@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CyberAware AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,500;7..72,700&family=Sora:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #211c4f;
+  --lilac: #f1eef9;
+  --paper: #ffffff;
+  --blue: #3d3bf3;
+  --blue-soft: #e4e3fd;
+  --safe: #14b37d;
+  --alert: #ff5a5f;
+  --muted: #6a6690;
+  --line: #d9d5ee;
+  --display: "Sora", "Segoe UI", sans-serif;
+  --body: "Literata", Georgia, serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: var(--body);
+  color: var(--ink);
+  background: var(--lilac);
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px clamp(16px, 4vw, 48px);
+  background: var(--ink);
+  color: #fff;
+}
+
+.brand { display: flex; align-items: center; gap: 14px; }
+
+.lock {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--blue);
+  display: grid;
+  place-items: center;
+}
+
+.lock .shackle {
+  transform-box: fill-box;
+  transform-origin: 100% 100%;
+  transform: translateY(-3px) rotate(-38deg);
+  transition: transform 0.35s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+.lock.closed .shackle { transform: translateY(0) rotate(0); }
+
+.brand-name {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+}
+
+.brand-sub { font-size: 0.85rem; color: #b9b5e6; margin-top: 2px; }
+
+.reset {
+  font: 500 0.9rem var(--display);
+  color: #fff;
+  background: transparent;
+  border: 1.5px solid #5b56a8;
+  border-radius: 999px;
+  padding: 9px 18px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.reset:hover { background: #2f2a6b; }
+
+.thread {
+  flex: 1;
+  overflow-y: auto;
+  padding: 36px clamp(16px, 4vw, 48px) 12px;
+  scroll-behavior: smooth;
+}
+
+.column { max-width: 780px; margin: 0 auto; display: grid; gap: 20px; }
+
+.welcome h1 {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(1.9rem, 5vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  max-width: 16ch;
+}
+
+.welcome p { margin-top: 14px; max-width: 54ch; line-height: 1.65; color: var(--muted); font-size: 1.05rem; }
+
+.topics {
+  margin-top: 26px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.topic {
+  text-align: left;
+  background: var(--paper);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  font-family: var(--body);
+  color: var(--ink);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.topic:hover { border-color: var(--blue); background: var(--blue-soft); }
+
+.topic strong { display: block; font: 700 1rem var(--display); margin-bottom: 4px; }
+.topic span { font-size: 0.88rem; color: var(--muted); line-height: 1.4; }
+
+.msg { display: flex; gap: 12px; align-items: flex-start; }
+
+.msg.user { justify-content: flex-end; }
+
+.badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px 10px 18px 18px;
+  background: var(--blue);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.msg.error .badge { background: var(--alert); }
+
+.bubble { line-height: 1.7; font-size: 1rem; }
+
+.msg.user .bubble {
+  background: var(--blue);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 20px 20px 4px 20px;
+  white-space: pre-wrap;
+  max-width: 85%;
+}
+
+.msg.bot .bubble {
+  background: var(--paper);
+  border: 1.5px solid var(--line);
+  border-radius: 4px 20px 20px 20px;
+  padding: 16px 20px;
+  flex: 1;
+  min-width: 0;
+}
+
+.msg.error .bubble {
+  background: #fff0f0;
+  border: 1.5px solid #ffc4c6;
+  color: #a3262b;
+  border-radius: 4px 20px 20px 20px;
+  padding: 14px 18px;
+  flex: 1;
+}
+
+.bubble h3 {
+  font-family: var(--display);
+  font-size: 0.98rem;
+  font-weight: 700;
+  margin: 18px 0 6px;
+  padding-left: 12px;
+  border-left: 4px solid var(--safe);
+  color: var(--ink);
+}
+
+.bubble h3:first-child { margin-top: 0; }
+.bubble p + p, .bubble ul + p, .bubble ol + p, .bubble p + ul, .bubble p + ol { margin-top: 8px; }
+.bubble ul, .bubble ol { padding-left: 22px; display: grid; gap: 6px; }
+.bubble ul li::marker { color: var(--blue); }
+.bubble strong { font-weight: 700; background: linear-gradient(transparent 62%, #d3f5e7 62%); }
+.bubble code { background: var(--lilac); padding: 1px 6px; border-radius: 5px; font-size: 0.88em; }
+
+.typing { display: flex; gap: 6px; align-items: center; padding: 20px !important; }
+
+.typing span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--blue);
+  animation: pulse 1s infinite ease-in-out;
+}
+
+.typing span:nth-child(2) { animation-delay: 0.15s; }
+.typing span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes pulse {
+  0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.dock { padding: 12px clamp(16px, 4vw, 48px) 22px; }
+
+.chips {
+  max-width: 780px;
+  margin: 0 auto 10px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.chip {
+  flex-shrink: 0;
+  font: 500 0.85rem var(--display);
+  color: var(--blue);
+  background: var(--blue-soft);
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.chip:hover { background: var(--blue); color: #fff; }
+
+.composer {
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  background: var(--paper);
+  border: 2px solid var(--line);
+  border-radius: 22px;
+  padding: 8px 8px 8px 20px;
+  transition: border-color 0.15s ease;
+}
+
+.composer:focus-within { border-color: var(--blue); }
+
+.composer textarea {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  resize: none;
+  font: 400 1rem/1.5 var(--body);
+  color: var(--ink);
+  background: transparent;
+  max-height: 160px;
+  padding: 9px 0;
+}
+
+.composer textarea::placeholder { color: #9a96bd; }
+
+.send {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+.send:hover:not(:disabled) { background: #2b29d1; }
+.send:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.hint { max-width: 780px; margin: 10px auto 0; font-size: 0.8rem; color: var(--muted); text-align: center; }
+
+button:focus-visible, textarea:focus-visible {
+  outline: 3px solid var(--safe);
+  outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .brand-sub { display: none; }
+  .reset { padding: 8px 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="lock" id="lock" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="11" width="16" height="10" rx="2.5" fill="#fff" stroke="none"/>
+          <path class="shackle" d="M8 11V8a4 4 0 0 1 8 0v3"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">CyberAware AI</div>
+        <div class="brand-sub">Learn cybersecurity and stay safe online</div>
+      </div>
+    </div>
+    <button class="reset" id="reset" type="button">New chat</button>
+  </header>
+
+  <section class="thread" id="thread" aria-live="polite">
+    <div class="column" id="column">
+      <div class="welcome" id="welcome">
+        <h1>Understand the threats. Build safer habits.</h1>
+        <p>Ask about passwords, phishing, malware, privacy or anything else in cybersecurity. You get plain-language lessons and one thing to do today.</p>
+        <div class="topics">
+          <button class="topic" type="button" data-q="How do I create and manage strong passwords?"><strong>Passwords</strong><span>Strong, unique, and easy to manage</span></button>
+          <button class="topic" type="button" data-q="How can I spot a phishing email or message?"><strong>Phishing</strong><span>Spot fake emails, texts and links</span></button>
+          <button class="topic" type="button" data-q="What is malware and how do I protect my devices from it?"><strong>Malware</strong><span>Viruses, ransomware and defenses</span></button>
+          <button class="topic" type="button" data-q="Is public Wi-Fi safe and how should I use it?"><strong>Safe networks</strong><span>Wi-Fi, VPNs and firewalls</span></button>
+          <button class="topic" type="button" data-q="Explain encryption in simple terms."><strong>Encryption</strong><span>How data stays private</span></button>
+          <button class="topic" type="button" data-q="How do I start learning cybersecurity from scratch?"><strong>Start learning</strong><span>Paths, skills and certifications</span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="dock">
+    <div class="chips" id="chips">
+      <button class="chip" type="button">What is two-factor authentication?</button>
+      <button class="chip" type="button">What should I do if my account is hacked?</button>
+      <button class="chip" type="button">How does a VPN work?</button>
+      <button class="chip" type="button">What is social engineering?</button>
+    </div>
+    <div class="composer">
+      <textarea id="input" rows="1" maxlength="4000" placeholder="Ask a cybersecurity question..." aria-label="Your question"></textarea>
+      <button class="send" id="send" type="button" aria-label="Send">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      </button>
+    </div>
+    <p class="hint">Enter to send, Shift+Enter for a new line. CyberAware only covers cybersecurity learning and safe digital practices.</p>
+  </div>
+
+<script>
+const thread = document.getElementById("thread");
+const column = document.getElementById("column");
+const welcome = document.getElementById("welcome");
+const chips = document.getElementById("chips");
+const lock = document.getElementById("lock");
+const input = document.getElementById("input");
+const sendButton = document.getElementById("send");
+const resetButton = document.getElementById("reset");
+
+const shieldIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg>';
+const alertIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>';
+
+let history = [];
+let waiting = false;
+
+function escapeHtml(text) {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function formatInline(text) {
+  return escapeHtml(text)
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`(.+?)`/g, "<code>$1</code>");
+}
+
+function renderMarkdown(source) {
+  let html = "";
+  let listType = null;
+
+  const closeList = () => {
+    if (listType) {
+      html += `</${listType}>`;
+      listType = null;
+    }
+  };
+
+  for (const rawLine of source.split("\n")) {
+    const line = rawLine.trim();
+    const bullet = line.match(/^[-*]\s+(.*)/);
+    const numbered = line.match(/^\d+[.)]\s+(.*)/);
+    const heading = line.match(/^#{1,4}\s+(.*)/);
+
+    if (bullet || numbered) {
+      const type = bullet ? "ul" : "ol";
+      if (listType !== type) {
+        closeList();
+        html += `<${type}>`;
+        listType = type;
+      }
+      html += `<li>${formatInline((bullet || numbered)[1])}</li>`;
+      continue;
+    }
+
+    closeList();
+
+    if (heading) {
+      html += `<h3>${formatInline(heading[1])}</h3>`;
+    } else if (line) {
+      html += `<p>${formatInline(line)}</p>`;
+    }
+  }
+
+  closeList();
+  return html;
+}
+
+function scrollToBottom() {
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function addMessage(kind, content) {
+  const message = document.createElement("div");
+  message.className = `msg ${kind}`;
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+
+  if (kind === "user") {
+    bubble.textContent = content;
+  } else {
+    bubble.innerHTML = kind === "bot" ? renderMarkdown(content) : escapeHtml(content);
+    const badge = document.createElement("div");
+    badge.className = "badge";
+    badge.innerHTML = kind === "bot" ? shieldIcon : alertIcon;
+    message.appendChild(badge);
+  }
+
+  message.appendChild(bubble);
+  column.appendChild(message);
+  scrollToBottom();
+  return message;
+}
+
+function addTyping() {
+  const message = document.createElement("div");
+  message.className = "msg bot";
+  message.innerHTML = `<div class="badge">${shieldIcon}</div><div class="bubble typing"><span></span><span></span><span></span></div>`;
+  column.appendChild(message);
+  scrollToBottom();
+  return message;
+}
+
+function setWaiting(state) {
+  waiting = state;
+  sendButton.disabled = state;
+  input.disabled = state;
+  lock.classList.toggle("closed", state);
+  if (!state) input.focus();
+}
+
+function resizeInput() {
+  input.style.height = "auto";
+  input.style.height = `${input.scrollHeight}px`;
+}
+
+async function sendMessage(text) {
+  const message = text.trim();
+  if (!message || waiting) return;
+
+  welcome.style.display = "none";
+  chips.style.display = "none";
+  addMessage("user", message);
+  history.push({ role: "user", text: message });
+
+  input.value = "";
+  resizeInput();
+  setWaiting(true);
+  const typing = addTyping();
+
+  try {
+    const response = await fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: history })
+    });
+    const data = await response.json();
+    typing.remove();
+
+    if (!response.ok) {
+      history.pop();
+      addMessage("error", data.error || "Something went wrong. Please try again.");
+    } else {
+      history.push({ role: "model", text: data.reply });
+      addMessage("bot", data.reply);
+    }
+  } catch (error) {
+    typing.remove();
+    history.pop();
+    addMessage("error", "Connection lost. Check your network and try again.");
+  }
+
+  setWaiting(false);
+}
+
+function resetChat() {
+  history = [];
+  column.querySelectorAll(".msg").forEach((node) => node.remove());
+  welcome.style.display = "";
+  chips.style.display = "";
+  input.value = "";
+  resizeInput();
+  input.focus();
+}
+
+sendButton.addEventListener("click", () => sendMessage(input.value));
+
+input.addEventListener("input", resizeInput);
+
+input.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage(input.value);
+  }
+});
+
+document.querySelectorAll(".topic").forEach((button) => {
+  button.addEventListener("click", () => sendMessage(button.dataset.q));
+});
+
+document.querySelectorAll(".chip").forEach((button) => {
+  button.addEventListener("click", () => sendMessage(button.textContent));
+});
+
+resetButton.addEventListener("click", resetChat);
+
+input.focus();
+</script>
+</body>
+</html>
